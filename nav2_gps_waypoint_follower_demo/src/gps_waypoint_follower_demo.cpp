@@ -181,7 +181,7 @@ void GPSWayPointFollowerClient::resultCallback(
 
   RCLCPP_INFO(this->get_logger(), "Result received");
   for (auto number : result.result->missed_waypoints) {
-    RCLCPP_INFO(this->get_logger(), "Missed Waypoint %i", number);
+    RCLCPP_INFO(this->get_logger(), "Missed Waypoint %i", number.index);
   }
 }
 
