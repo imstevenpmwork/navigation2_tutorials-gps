@@ -129,6 +129,11 @@
     <origin xyz="${caster_xoff} 0.0 ${-(base_height/2)}" rpy="0 0 0"/>
   </joint>
 
+  <gazebo reference="front_caster">
+    <mu1 value="0.001"/>
+    <mu2 value="0.001"/>
+  </gazebo>
+
   <link name="imu_link">
     <visual>
       <geometry>
@@ -343,7 +348,7 @@
     <sensor name="my_gps" type="gps">
       <!-- ensure the sensor is active (required) -->
       <always_on>true</always_on>
-      <update_rate>1</update_rate>
+      <update_rate>30</update_rate>
       <plugin name="my_gps_plugin" filename="libgazebo_ros_gps_sensor.so">
         <ros>
           <!-- publish to /gps/data -->
