@@ -28,6 +28,8 @@
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2/convert.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "nav2_msgs/srv/send_gps.hpp"
+
 /**
  * @brief namespace for way point following, points are from a yaml file
  *
@@ -71,7 +73,7 @@ public:
    *
    * @param poses
    */
-  void startWaypointFollowing();
+  void startWaypointFollowing(std::vector<geographic_msgs::msg::GeoPose>);
 
   /**
    * @brief
@@ -98,9 +100,12 @@ public:
 
   void resultCallback(const GPSWaypointFollowerGoalHandle::WrappedResult & result);
 
+  void WaypointsCallback(const std::shared_ptr<nav2_msgs::srv::SendGps::Request> request,
+  std::shared_ptr<nav2_msgs::srv::SendGps::Response> response);
+
 protected:
   bool goal_done_;
-  rclcpp::TimerBase::SharedPtr timer_;
+  
   // client to connect waypoint follower service(FollowWaypoints)
   rclcpp_action::Client<ClientT>::SharedPtr
     gps_waypoint_follower_action_client_;
@@ -111,6 +116,8 @@ protected:
   GPSWaypointFollowerGoalHandle::SharedPtr gps_waypoint_follower_goalhandle_;
 
   std::vector<geographic_msgs::msg::GeoPose> gps_poses_from_yaml_;
+
+  rclcpp::Service<nav2_msgs::srv::SendGps>::SharedPtr waypoints_service;
 };
 }  // namespace nav2_gps_waypoint_follower_demo
 
