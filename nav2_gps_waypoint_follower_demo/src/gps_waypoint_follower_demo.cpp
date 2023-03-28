@@ -31,23 +31,21 @@ GPSWayPointFollowerClient::GPSWayPointFollowerClient()
 
   // number of poses that robot will go throug, specified in yaml file
   this->declare_parameter("waypoints", std::vector<std::string>({"0"}));
-  gps_poses_from_yaml_ = loadGPSWaypointsFromYAML();
-  RCLCPP_INFO(
-    this->get_logger(),
-    "Created an Instance of GPSWayPointFollowerClient");
+  this->declare_parameter("autostart",false);
+  auto autostart = this->get_parameter("autostart").as_bool();
 
   waypoints_service = create_service<nav2_msgs::srv::SendGps>(
     "waypoints_send",std::bind(&GPSWayPointFollowerClient::WaypointsCallback,this,
     std::placeholders::_1,std::placeholders::_2));
-
-
-  this->declare_parameter("autostart",false);
-  auto autostart = this->get_parameter("autostart").as_bool();
+  
   if (autostart){
-    RCLCPP_INFO(
-    this->get_logger(),
-    "Loaded %i GPS waypoints from YAML, gonna pass them to FollowGPSWaypoints...",
+    gps_poses_from_yaml_ = loadGPSWaypointsFromYAML();
+    RCLCPP_INFO(this->get_logger(),"Created an Instance of GPSWayPointFollowerClient");
+
+    RCLCPP_INFO(this->get_logger(),
+    "Loaded %i GPS waypoints from YAML, gonna pass them to FollowGPSWaypoints...",    
     static_cast<int>(gps_poses_from_yaml_.size()));
+
     startWaypointFollowing(gps_poses_from_yaml_);
   }
 }
@@ -70,6 +68,11 @@ void GPSWayPointFollowerClient::WaypointsCallback(const std::shared_ptr<nav2_msg
 
 void GPSWayPointFollowerClient::startWaypointFollowing(std::vector<geographic_msgs::msg::GeoPose> gps_poses)
 {
+
+  if (gps_poses.size()==0){
+    return;
+  }
+
   using namespace std::placeholders;
 
   this->goal_done_ = false;
@@ -124,6 +127,12 @@ GPSWayPointFollowerClient::loadGPSWaypointsFromYAML()
   std::vector<std::string> waypoints_vector =
     this->get_parameter("waypoints").as_string_array();
   std::vector<geographic_msgs::msg::GeoPose> gps_waypoint_msg_vector;
+
+  if (waypoints_vector.size()==0){
+    RCLCPP_WARN(get_logger(),"Zero waypoints registered from the configuration file");
+    return gps_waypoint_msg_vector;
+  }
+
   for (auto && curr_waypoint : waypoints_vector) {
     //std::cout << curr_waypoint << std::endl;
     try {
